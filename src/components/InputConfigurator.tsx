@@ -4,7 +4,6 @@ import "./InputConfigurator.css";
 
 interface Props {
   event: EdgeActionEvent;
-  mockKvs: Record<string, string>;
   originMocks: Record<number, OriginMockResponse>;
   onChange: (event: EdgeActionEvent) => void;
   onJsonChange: (json: string) => void;
@@ -15,7 +14,7 @@ type Tab = "request" | "origins" | "context" | "json";
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"];
 
-export function InputConfigurator({ event, mockKvs, originMocks, onChange, onJsonChange, onOriginMocksChange }: Props) {
+export function InputConfigurator({ event, originMocks, onChange, onJsonChange, onOriginMocksChange }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("request");
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
@@ -51,7 +50,7 @@ export function InputConfigurator({ event, mockKvs, originMocks, onChange, onJso
           <ContextTab event={event} onChange={onChange} />
         )}
         {activeTab === "json" && (
-          <JsonTab event={event} kvs={mockKvs} onChange={onJsonChange} />
+          <JsonTab event={event} onChange={onJsonChange} />
         )}
       </div>
     </div>
@@ -409,8 +408,8 @@ function ContextTab({ event, onChange }: { event: EdgeActionEvent; onChange: (e:
   );
 }
 
-function JsonTab({ event, kvs, onChange }: { event: EdgeActionEvent; kvs: Record<string, string>; onChange: (json: string) => void }) {
-  const fullJson = JSON.stringify({ event, mockKvs: kvs }, null, 2);
+function JsonTab({ event, onChange }: { event: EdgeActionEvent; onChange: (json: string) => void }) {
+  const fullJson = JSON.stringify(event, null, 2);
 
   return (
     <div className="tab-form json-tab">
@@ -420,8 +419,8 @@ function JsonTab({ event, kvs, onChange }: { event: EdgeActionEvent; kvs: Record
         onChange={(e) => {
           try {
             const parsed = JSON.parse(e.target.value);
-            if (parsed.event) {
-              onChange(JSON.stringify(parsed.event));
+            if (parsed.request) {
+              onChange(JSON.stringify(parsed));
             }
           } catch {
             // Invalid JSON, don't update

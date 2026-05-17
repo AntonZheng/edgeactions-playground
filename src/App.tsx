@@ -278,7 +278,6 @@ function App() {
             </div>
             <InputConfigurator
               event={store.inputEvent}
-              mockKvs={store.mockKvs}
               originMocks={store.originMocks}
               onChange={(e) => store.setInputEvent(e)}
               onJsonChange={(json) => store.setInputJson(json)}

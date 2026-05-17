@@ -113,12 +113,11 @@ export function decodeState(hash: string): ShareableState | null {
     if (!json) return null;
     const parsed = JSON.parse(json);
 
-    // Support both v1 (legacy) and v2 (compact) formats
-    if (parsed.v === 2) {
-      return compactDecode(parsed as CompactState);
-    }
-    // v1 legacy format
-    return parsed as ShareableState;
+    // Support v2 compact format only
+  if (parsed.v === 2) {
+    return compactDecode(parsed as CompactState);
+  }
+  return null;
   } catch {
     return null;
   }
