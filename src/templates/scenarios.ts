@@ -20,8 +20,8 @@ export const templates: Template[] = [
     code: `// @ts-check
 
 /**
- * @param {import("./edge_actions").EdgeActionEvent} event - The event object containing request and response
- * @returns {import("./edge_actions").EdgeActionEvent} - The modified event object
+ * @param {EdgeActionEvent} event - The event object containing request and response
+ * @returns {EdgeActionEvent} - The modified event object
  */
 function handler(event) {
     const response = event.response;
@@ -78,8 +78,8 @@ function handler(event) {
     code: `// @ts-check
 
 /**
- * @param {import("./edge_actions").EdgeActionEvent} event - The event object containing request and response
- * @returns {import("./edge_actions").EdgeActionEvent} - The modified event object
+ * @param {EdgeActionEvent} event - The event object containing request and response
+ * @returns {EdgeActionEvent} - The modified event object
  */
 function handler(event) {
     var response = event.response;
@@ -133,8 +133,8 @@ function handler(event) {
     code: `// @ts-check
 
 /**
- * @param {import("./edge_actions").EdgeActionEvent} event - The event object containing request and response
- * @returns {import("./edge_actions").EdgeActionEvent} - The modified event object
+ * @param {EdgeActionEvent} event - The event object containing request and response
+ * @returns {EdgeActionEvent} - The modified event object
  */
 function handler(event) {
     const response = event.response;
@@ -220,8 +220,8 @@ function handler(event) {
     code: `// @ts-check
 
 /**
- * @param {import("./edge_actions").EdgeActionEvent} event - The event object containing request and response
- * @returns {import("./edge_actions").EdgeActionEvent} - The modified event object
+ * @param {EdgeActionEvent} event - The event object containing request and response
+ * @returns {EdgeActionEvent} - The modified event object
  */
 function handler(event) {
     var response = event.response;
@@ -253,8 +253,8 @@ function handler(event) {
 
 /**
  * Finds an experimental origin by name patterns
- * @param {Array<import("./edge_actions").CdnOrigin>} origins - Array of origin objects
- * @returns {import("./edge_actions").CdnOrigin|null} - Found experimental origin or null
+ * @param {Array<CdnOrigin>} origins - Array of origin objects
+ * @returns {CdnOrigin|null} - Found experimental origin or null
  */
 function findExperimentalOrigin(origins) {
     const found = origins.find(origin => {
@@ -316,8 +316,8 @@ function findExperimentalOrigin(origins) {
  * 3. Converting old product URLs to new format
  * 4. Query parameter manipulation
  * 
- * @param {import("./edge_actions").EdgeActionEvent} event - The event object containing request and response
- * @returns {import("./edge_actions").EdgeActionEvent} - The modified event object
+ * @param {EdgeActionEvent} event - The event object containing request and response
+ * @returns {EdgeActionEvent} - The modified event object
  */
 function handler(event) {
     const request = event.request;
