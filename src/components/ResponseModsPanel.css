@@ -1,0 +1,86 @@
+.response-mods {
+  padding: 10px 14px;
+}
+
+.mods-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+}
+
+.mods-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 16px;
+}
+
+.mod-section {
+  margin-bottom: 12px;
+}
+
+.mod-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+
+.mod-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: "JetBrains Mono", "Cascadia Code", monospace;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.mod-item.mod-added {
+  background: var(--success-glow);
+}
+
+.mod-item.mod-removed {
+  background: var(--error-glow);
+}
+
+.mod-item.mod-updated,
+.mod-item.mod-changed {
+  background: var(--warning-glow);
+}
+
+.mod-badge {
+  font-weight: 700;
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.mod-added .mod-badge { color: var(--success); }
+.mod-removed .mod-badge { color: var(--error); }
+.mod-updated .mod-badge { color: var(--warning); }
+
+.mod-key {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mod-arrow {
+  color: var(--text-muted);
+}
+
+.mod-value {
+  color: var(--accent);
+  word-break: break-all;
+  font-weight: 500;
+}
+
+.mod-body {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}

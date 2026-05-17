@@ -1,0 +1,96 @@
+.lifecycle-pipeline {
+  padding: 10px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.pipeline-flow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: none;
+}
+
+.pipeline-flow::-webkit-scrollbar {
+  display: none;
+}
+
+.pipeline-stage-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pipeline-endpoint {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 5px 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--border-subtle);
+}
+
+.pipeline-arrow {
+  color: var(--text-muted);
+  font-size: 12px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.pipeline-stage {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all var(--transition);
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.pipeline-stage:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.pipeline-stage.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(0, 120, 212, 0.15);
+}
+
+.pipeline-stage.executed {
+  border-color: var(--success);
+  box-shadow: 0 0 10px var(--success-glow);
+}
+
+.pipeline-stage.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.stage-icon {
+  font-size: 12px;
+}
+
+.stage-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+

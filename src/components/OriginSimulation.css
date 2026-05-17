@@ -1,0 +1,288 @@
+/* ===== Simulation Panel — Clean & Compact ===== */
+.origin-sim {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Status Bar ===== */
+.sim-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sim-status-code {
+  font-size: 15px;
+  font-weight: 800;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: -0.3px;
+}
+
+.sim-status-bar.status-2xx .sim-status-code { color: var(--success); }
+.sim-status-bar.status-3xx .sim-status-code { color: var(--accent); }
+.sim-status-bar.status-4xx .sim-status-code { color: var(--warning); }
+.sim-status-bar.status-5xx .sim-status-code { color: var(--error); }
+
+
+
+/* ===== Section Labels ===== */
+.sim-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sim-routing-method {
+  font-weight: 500;
+  text-transform: none;
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+/* ===== Origins — compact chips ===== */
+.sim-origins-section {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sim-origins-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sim-origin-chip {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  min-width: 120px;
+  flex: 1;
+  transition: all 0.15s ease;
+}
+
+.sim-origin-chip.selected {
+  border-color: var(--success);
+  background: var(--success-glow);
+}
+
+.sim-origin-chip.unhealthy {
+  border-left: 3px solid var(--error);
+}
+
+.sim-origin-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.sim-origin-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.sim-origin-tag {
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--success);
+  background: var(--success-glow);
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+
+.sim-origin-dot {
+  margin-left: auto;
+  font-size: 8px;
+}
+
+.sim-origin-dot.h { color: var(--success); }
+.sim-origin-dot.u { color: var(--error); }
+
+.sim-origin-detail {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 10px;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.sim-origin-status {
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.sim-origin-status.ok {
+  color: var(--success);
+}
+
+.sim-origin-status.err {
+  color: var(--error);
+}
+
+
+
+/* ===== Headers ===== */
+.sim-headers-section {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sim-headers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sim-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.sim-header.from-handler {
+  background: rgba(0, 120, 212, 0.06);
+}
+
+.sim-hdr-key {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sim-hdr-val {
+  color: var(--text);
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+}
+
+.sim-hdr-src {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.sim-header.from-handler .sim-hdr-src {
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.sim-header.from-origin .sim-hdr-src {
+  color: var(--text-muted);
+  background: var(--surface-3);
+}
+
+/* ===== Response Body ===== */
+.sim-body-section {
+  padding: 10px 16px;
+}
+
+/* ===== What Changed — Inline Diff ===== */
+.sim-diff-section {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sim-diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sim-diff-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  line-height: 1.5;
+}
+
+.sim-diff-added {
+  background: var(--success-glow);
+}
+
+.sim-diff-changed {
+  background: var(--warning-glow);
+}
+
+.sim-diff-removed {
+  background: var(--error-glow);
+}
+
+.sim-diff-badge {
+  font-weight: 800;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.sim-diff-added .sim-diff-badge { color: var(--success); }
+.sim-diff-changed .sim-diff-badge { color: var(--warning); }
+.sim-diff-removed .sim-diff-badge { color: var(--error); }
+
+.sim-diff-field {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.sim-diff-old {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  opacity: 0.7;
+  word-break: break-all;
+}
+
+.sim-diff-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sim-diff-new {
+  color: var(--text);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.sim-body-pre {
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+  line-height: 1.5;
+  margin: 0;
+}
