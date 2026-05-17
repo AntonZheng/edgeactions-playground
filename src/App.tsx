@@ -49,8 +49,9 @@ function App() {
   }, [store.code]);
 
   const handleEditorWillMount: BeforeMount = (monaco) => {
-    // Register type definitions BEFORE model creation so IntelliSense is ready
-    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+    const jsDefaults = monaco.languages.typescript.javascriptDefaults;
+
+    jsDefaults.setCompilerOptions({
       checkJs: true,
       strict: false,
       allowJs: true,
@@ -59,15 +60,13 @@ function App() {
       moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
     });
 
-    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+    jsDefaults.setDiagnosticsOptions({
       noSemanticValidation: false,
       noSyntaxValidation: false,
     });
 
-    monaco.languages.typescript.javascriptDefaults.addExtraLib(
-      EDGE_ACTIONS_DTS,
-      "file:///edge_actions.d.ts"
-    );
+    // Register type definitions as a global .d.ts so JSDoc @param {EdgeActionEvent} resolves
+    jsDefaults.addExtraLib(EDGE_ACTIONS_DTS, "ts:edge_actions.d.ts");
   };
 
   const handleEditorMount: OnMount = (editor, monaco) => {
@@ -248,6 +247,7 @@ function App() {
           <Editor
             height="100%"
             defaultLanguage="javascript"
+            path="handler.js"
             value={store.code}
             onChange={(v) => store.setCode(v || "")}
             beforeMount={handleEditorWillMount}
