@@ -159,8 +159,8 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
   },
 
   share: () => {
-    const { code, inputEvent, mockKvs } = get();
-    const url = copyShareUrl(code, inputEvent, mockKvs);
+    const { code, inputEvent } = get();
+    const url = copyShareUrl(code, inputEvent);
     set({ shareNotification: `Copied! (${url.length} chars)` });
     setTimeout(() => set({ shareNotification: null }), 3000);
   },
