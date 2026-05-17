@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import Editor, { type OnMount } from "@monaco-editor/react";
+import Editor, { type OnMount, type BeforeMount } from "@monaco-editor/react";
 import { usePlaygroundStore } from "./store/playground-store";
 import { EDGE_ACTIONS_DTS, HookPointLabels } from "./types/edge-actions";
 import { LifecyclePipeline } from "./components/LifecyclePipeline";
@@ -48,27 +48,31 @@ function App() {
     }
   }, [store.code]);
 
-  const handleEditorMount: OnMount = (editor, monaco) => {
-    editorRef.current = editor;
-    monacoRef.current = monaco;
-
-    // Add type definitions for IntelliSense
-    monaco.languages.typescript.javascriptDefaults.addExtraLib(
-      EDGE_ACTIONS_DTS,
-      "file:///edge_actions.d.ts"
-    );
+  const handleEditorWillMount: BeforeMount = (monaco) => {
+    // Register type definitions BEFORE model creation so IntelliSense is ready
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+      checkJs: true,
+      strict: false,
+      allowJs: true,
+      noLib: false,
+      target: monaco.languages.typescript.ScriptTarget.ES2020,
+      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+    });
 
     monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: false,
       noSyntaxValidation: false,
     });
 
-    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-      checkJs: true,
-      strict: false,
-      allowJs: true,
-      target: monaco.languages.typescript.ScriptTarget.ES2020,
-    });
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(
+      EDGE_ACTIONS_DTS,
+      "file:///edge_actions.d.ts"
+    );
+  };
+
+  const handleEditorMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
 
     // Register custom completion provider for Edge Actions patterns
     monaco.languages.registerCompletionItemProvider("javascript", {
@@ -246,6 +250,7 @@ function App() {
             defaultLanguage="javascript"
             value={store.code}
             onChange={(v) => store.setCode(v || "")}
+            beforeMount={handleEditorWillMount}
             onMount={handleEditorMount}
             theme="vs-dark"
             options={{
