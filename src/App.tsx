@@ -126,14 +126,6 @@ function App() {
               insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               detail: "Rewrite the request URL",
               range,
-            },
-            {
-              label: "response.body",
-              kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: "response.body = '${1:response body}'",
-              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-              detail: "Override the response body",
-              range,
             }
           );
         }

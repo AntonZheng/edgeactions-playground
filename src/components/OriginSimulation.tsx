@@ -199,9 +199,9 @@ function computeDiffs(input: EdgeActionEvent, output: EdgeActionEvent): DiffItem
     }
   }
 
-  // Response body change
+  // Response body change (not yet supported in production)
   if (output.response.body !== input.response.body && output.response.body !== "") {
-    diffs.push({ field: "response.body", type: "changed", newVal: output.response.body.length > 60 ? output.response.body.slice(0, 60) + "…" : output.response.body });
+    diffs.push({ field: "response.body (unsupported)", type: "changed", newVal: output.response.body.length > 60 ? output.response.body.slice(0, 60) + "…" : output.response.body });
   }
 
   return diffs;

@@ -212,7 +212,7 @@ function computeSimulatedResponse(
     return {
       statusCode: output.response.response_code,
       headers: { ...output.response.headers },
-      body: output.response.body || "",
+      body: "",
       selectedOriginId: -1,
       selectedOriginName: "None (blocked by handler)",
       routingMethod: "synthetic",
@@ -243,9 +243,10 @@ function computeSimulatedResponse(
   const baseBody = originMock?.body ?? "";
 
   // Handler response_code overrides origin status; handler headers merge on top
+  // Note: body override is not supported in production — body always comes from origin
   const finalStatus = handlerSetResponseCode ? output.response.response_code : baseStatus;
   const finalHeaders = { ...baseHeaders, ...output.response.headers };
-  const finalBody = output.response.body || baseBody;
+  const finalBody = baseBody;
 
   const routingMethod = handlerSelectedId >= 0 ? "handler" : "weighted";
 

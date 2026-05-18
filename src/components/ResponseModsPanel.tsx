@@ -131,9 +131,9 @@ export function ResponseModsPanel({ input, output }: Props) {
 
       {bodyChanged && (
         <div className="mod-section">
-          <div className="mod-section-title">Response Body</div>
+          <div className="mod-section-title">Response Body <span style={{opacity: 0.5, fontSize: "0.8em"}}>(not yet supported in production)</span></div>
           <div className="mod-item mod-changed">
-            <span className="mod-value mod-body">{output.response.body.slice(0, 200)}{output.response.body.length > 200 ? "..." : ""}</span>
+            <span className="mod-value mod-body" style={{opacity: 0.5}}>{output.response.body.slice(0, 200)}{output.response.body.length > 200 ? "..." : ""}</span>
           </div>
         </div>
       )}
