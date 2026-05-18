@@ -93,7 +93,9 @@ function handler(event) {
     if (country.toUpperCase() === 'GB') {
         console.log("Request rejected from UK with code 403");
         response.response_code = 403;
+        response.body = '{"error": "Access denied", "reason": "Geographic restriction"}';
         response.headers['X-Request-Rejected'] = "true";
+        response.headers['content-type'] = "application/json";
     }
 
     return event;
@@ -117,7 +119,7 @@ function handler(event) {
       0: {
         statusCode: 200,
         headers: { "content-type": "application/json" },
-        body: '{"message": "This should not be reached for blocked countries"}',
+        body: '{"message": "Normal origin response (not reached when blocked)"}',
       },
       1: {
         statusCode: 200,

@@ -12,7 +12,7 @@ export interface SimulatedResponse {
   body: string;
   selectedOriginId: number;
   selectedOriginName: string;
-  routingMethod: "handler" | "weighted";
+  routingMethod: "handler" | "weighted" | "synthetic";
 }
 
 interface PlaygroundState {
@@ -204,6 +204,20 @@ function computeSimulatedResponse(
   originMocks: Record<number, OriginMockResponse>,
 ): SimulatedResponse {
   const handlerSelectedId = output.origin?.id ?? -1;
+  const handlerSetResponseCode = output.response.response_code > 0;
+
+  // If handler set a response_code WITHOUT selecting an origin, it's a synthetic response
+  // (e.g., geo-block returning 403). The request never reaches an origin.
+  if (handlerSetResponseCode && handlerSelectedId < 0) {
+    return {
+      statusCode: output.response.response_code,
+      headers: { ...output.response.headers },
+      body: output.response.body || "",
+      selectedOriginId: -1,
+      selectedOriginName: "None (blocked by handler)",
+      routingMethod: "synthetic",
+    };
+  }
 
   // If handler didn't pick an origin, simulate AFD weighted routing
   let resolvedOriginId = handlerSelectedId;
@@ -223,17 +237,14 @@ function computeSimulatedResponse(
   const selectedOrigin = input.origin_data.find((o) => o.id === resolvedOriginId);
   const originMock = originMocks[resolvedOriginId];
 
-  // Compute the final merged response
+  // Compute the final merged response (origin response with handler's response mods applied)
   const baseStatus = originMock?.statusCode ?? 200;
   const baseHeaders = { ...(originMock?.headers ?? {}) };
   const baseBody = originMock?.body ?? "";
 
-  // If handler set a non-zero response code (like 403 for blocked), that overrides
-  const handlerOverridesResponse = output.response.response_code > 0;
-  const finalStatus = handlerOverridesResponse ? output.response.response_code : baseStatus;
-  const finalHeaders = handlerOverridesResponse
-    ? { ...baseHeaders, ...output.response.headers }
-    : { ...baseHeaders, ...output.response.headers };
+  // Handler response_code overrides origin status; handler headers merge on top
+  const finalStatus = handlerSetResponseCode ? output.response.response_code : baseStatus;
+  const finalHeaders = { ...baseHeaders, ...output.response.headers };
   const finalBody = output.response.body || baseBody;
 
   const routingMethod = handlerSelectedId >= 0 ? "handler" : "weighted";

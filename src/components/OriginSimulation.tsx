@@ -64,9 +64,14 @@ export function OriginSimulation({ simulation, inputEvent, output, originMocks }
           <div className="sim-label">
             Origin
             <span className="sim-routing-method">
-              {simulation.routingMethod === "handler" ? "selected by handler" : "AFD weighted routing"}
+              {simulation.routingMethod === "synthetic"
+                ? "bypassed (handler returned response)"
+                : simulation.routingMethod === "handler"
+                  ? "selected by handler"
+                  : "AFD weighted routing"}
             </span>
           </div>
+          {simulation.routingMethod !== "synthetic" && (
           <div className="sim-origins-grid">
             {inputEvent.origin_data.map((origin) => {
               const isSelected = origin.id === simulation.selectedOriginId;
@@ -91,6 +96,7 @@ export function OriginSimulation({ simulation, inputEvent, output, originMocks }
               );
             })}
           </div>
+          )}
         </div>
       )}
 
