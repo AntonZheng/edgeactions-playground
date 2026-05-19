@@ -10,38 +10,57 @@ The Edge Actions Playground is a **fully client-side** browser application that 
 
 ## Architecture
 
+```mermaid
+graph TD
+    subgraph Browser["Browser (Single Page Application)"]
+        Editor["Monaco Editor<br/>(handler.js)"]
+        Input["Input Configurator<br/>(Event JSON)"]
+        Output["Output Panels<br/>(Simulation / Mods / Console)"]
+
+        Store["Zustand Store<br/>code + inputEvent + originMocks"]
+        Executor["Execution Provider<br/>QuickJS-emscripten (WASM)"]
+        Sim["Simulation Engine<br/>computeSimulatedResponse()"]
+
+        Editor --> Store
+        Input --> Store
+        Store --> Executor
+        Executor --> Sim
+        Sim --> Output
+    end
+
+    style Browser fill:#1a1a2e,stroke:#16213e,color:#eee
+    style Executor fill:#0f3460,stroke:#533483,color:#eee
+    style Sim fill:#0f3460,stroke:#533483,color:#eee
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Browser (Single Page Application)                          │
-│                                                             │
-│  ┌──────────────┐   ┌────────────────┐   ┌──────────────┐  │
-│  │ Monaco Editor │   │ Input Config   │   │  Output Tabs │  │
-│  │  (handler.js) │   │ (Event JSON)   │   │  (Sim/Mods)  │  │
-│  └──────┬───────┘   └───────┬────────┘   └──────▲───────┘  │
-│         │                    │                    │          │
-│         ▼                    ▼                    │          │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              Zustand Store                           │    │
-│  │  code + inputEvent + originMocks → run() → output   │    │
-│  └──────────────────────┬──────────────────────────────┘    │
-│                         │                                   │
-│                         ▼                                   │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │         Execution Provider (Strategy Pattern)        │    │
-│  │                                                      │    │
-│  │  LocalProvider → QuickJS-emscripten (WASM)           │    │
-│  │  [Future: RemoteProvider → Hyperlight sandbox API]   │    │
-│  └──────────────────────┬──────────────────────────────┘    │
-│                         │                                   │
-│                         ▼                                   │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │         Simulation Engine                            │    │
-│  │  computeSimulatedResponse(input, output, mocks)     │    │
-│  │  → final status, headers, body, routing decision    │    │
-│  └─────────────────────────────────────────────────────┘    │
-│                                                             │
-│  No backend. No network calls. Everything runs in-browser.  │
-└─────────────────────────────────────────────────────────────┘
+
+> [!NOTE]
+> No backend, no network calls. Everything runs in-browser — the app works offline after initial load.
+
+---
+
+## Request Lifecycle (Production vs Playground)
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Playground as Playground (Browser)
+    participant QuickJS as QuickJS WASM
+    participant SimEngine as Simulation Engine
+
+    Client->>Playground: Click "Run"
+    Playground->>QuickJS: Execute handler(event)
+    QuickJS-->>Playground: Modified event
+    Playground->>SimEngine: computeSimulatedResponse(input, output, mocks)
+
+    alt Handler set response_code (no origin selected)
+        SimEngine-->>Playground: Synthetic response (blocked)
+    else Handler selected origin
+        SimEngine-->>Playground: Origin mock response + handler mods
+    else No origin selection
+        SimEngine-->>Playground: AFD weighted routing + handler mods
+    end
+
+    Playground-->>Client: Display final response
 ```
 
 ---
@@ -63,7 +82,7 @@ The Edge Actions Playground is a **fully client-side** browser application that 
 ```typescript
 interface ExecutionProvider {
   name: string;
-  execute(code: string, event: EdgeActionEvent, mockKvs?: Record<string, string>): Promise<ExecutionResult>;
+  execute(code: string, event: EdgeActionEvent): Promise<ExecutionResult>;
 }
 ```
 
@@ -71,7 +90,6 @@ interface ExecutionProvider {
 - Uses [quickjs-emscripten](https://github.com/nicolo-ribaudo/quickjs-emscripten) — QuickJS compiled to WASM
 - Executes handler code in a sandboxed QuickJS context
 - Injects `console` object that captures logs
-- Injects `EdgeActionKvs` mock for KVS operations
 - Serializes `EdgeActionEvent` into the sandbox, calls `handler(event)`, deserializes result
 
 **Why QuickJS-WASM?**
@@ -80,26 +98,30 @@ interface ExecutionProvider {
 - Close enough to production behavior for handler logic testing
 - ~1-1.5MB WASM payload (acceptable for a dev tool)
 
-**Difference from production:**
-- Production uses [Hyperlight](https://github.com/hyperlight-dev/hyperlight) micro-VM sandboxes
-- Performance characteristics differ (QuickJS is interpreter-based; Hyperlight uses ahead-of-time compilation)
-- CPU budget enforcement is not simulated
+> [!IMPORTANT]
+> Production uses [Hyperlight](https://github.com/hyperlight-dev/hyperlight) micro-VM sandboxes. Performance characteristics differ — QuickJS is interpreter-based while Hyperlight uses ahead-of-time compilation. CPU budget enforcement is not simulated.
 
 ### 3. Simulation Engine (`playground-store.ts :: computeSimulatedResponse`)
 
 After executing the handler, the simulation determines what a real AFD response would look like:
 
+```mermaid
+flowchart TD
+    A[Handler Output] --> B{response_code > 0<br/>AND no origin selected?}
+    B -->|Yes| C[Synthetic Response<br/>Block at edge, no origin contacted]
+    B -->|No| D{Handler set origin.id?}
+    D -->|Yes| E[Route to selected origin]
+    D -->|No| F[AFD weighted random routing<br/>among healthy origins]
+    E --> G[Merge: origin response + handler mods]
+    F --> G
+    G --> H[Final Response to Client]
+    C --> H
 ```
-Handler Output → Simulation → Final Response (what client sees)
-```
 
-**Logic:**
-
-1. **Synthetic response** — If handler sets `response_code > 0` without selecting an origin → request is terminated at the edge. No origin is contacted. Body is empty (body override not supported in production).
-
-2. **Origin selection** — If handler sets `origin.id` → route to that origin. Otherwise → simulate AFD weighted random routing among healthy origins.
-
-3. **Response merging** — Origin mock provides base status/headers/body. Handler's `response_code` overrides status. Handler's `response.headers` merge on top. Body always comes from origin (body manipulation is not yet supported in production).
+**Merging rules:**
+- Status code: handler's `response_code` overrides origin status (if set)
+- Headers: handler's `response.headers` merge on top of origin headers
+- Body: always from origin (body manipulation not yet supported in production)
 
 ### 4. Input Configuration (`InputConfigurator.tsx`)
 
@@ -144,7 +166,7 @@ interface EdgeActionEvent {
 }
 ```
 
-### Production Fidelity Notes
+### Production Fidelity
 
 | Feature | Playground | Production |
 |---------|-----------|------------|
@@ -154,10 +176,11 @@ interface EdgeActionEvent {
 | Origin selection | ✅ Simulated | ✅ Supported |
 | Synthetic response (block) | ✅ Simulated | ✅ Supported |
 | Body override | ⚠️ Shown as unsupported | ❌ Not yet implemented |
-| KVS read | ✅ Mock-based | ✅ Supported |
-| KVS write | ❌ Not simulated | ✅ Supported |
 | Multiple hook points | 🔲 UI exists | 🔲 Only ClientRequest active |
 | CPU budget enforcement | ❌ Not simulated | ✅ Enforced |
+
+> [!WARNING]
+> Body override (`response.body`, `request.body`) is defined in the FlatBuffer contract but the Actor Agent currently hardcodes `body_override: None` and `is_body_modified: false`. Handler body modifications are silently discarded in production.
 
 ---
 
@@ -170,9 +193,16 @@ https://antonzheng.github.io/edgeactions-playground/#<LZ-compressed JSON>
 ```
 
 **Encoding pipeline:**
-1. Compact format (v2) with short keys (`c`=code, `i`=input, etc.)
-2. Strip default values (empty strings, default origins, hook_point=0)
-3. LZ-string compression → URI-safe Base64
+
+```mermaid
+flowchart LR
+    A[Code + Event] --> B[Compact v2 format<br/>short keys, strip defaults]
+    B --> C[JSON.stringify]
+    C --> D[LZ-string compress]
+    D --> E[URI-safe Base64<br/>in URL hash]
+```
+
+**Compact key mapping:** `c`=code, `i`=input, `r`=request, `u`=uri, `m`=method, `d`=headers, `o`=origin_data, `s`=response, `h`=hook_point, `x`=context, `g`=origin
 
 **Typical URL size:** ~200-400 chars for simple handlers (vs ~2000+ uncompressed)
 
