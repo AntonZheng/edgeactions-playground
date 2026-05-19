@@ -15,6 +15,7 @@ function App() {
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
   const monacoRef = useRef<typeof MonacoType | null>(null);
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"editor" | "config">("editor");
 
   useEffect(() => {
     store.loadFromUrl();
@@ -217,6 +218,22 @@ function App() {
         executedHookPoint={store.output ? store.inputEvent.hook_point : undefined}
       />
 
+      {/* Mobile Tab Bar */}
+      <div className="mobile-tab-bar">
+        <button
+          className={`mobile-tab-btn ${mobileTab === "editor" ? "active" : ""}`}
+          onClick={() => setMobileTab("editor")}
+        >
+          📝 Editor
+        </button>
+        <button
+          className={`mobile-tab-btn ${mobileTab === "config" ? "active" : ""}`}
+          onClick={() => setMobileTab("config")}
+        >
+          ⚙️ Config & Output
+        </button>
+      </div>
+
       {/* Main Content */}
       <div className="main">
         {/* Template Panel (collapsible sidebar) */}
@@ -231,7 +248,7 @@ function App() {
         )}
 
         {/* Code Editor */}
-        <div className="panel editor-panel">
+        <div className={`panel editor-panel${mobileTab !== "editor" ? " mobile-hidden" : ""}`}>
           <div className="panel-header">
             <span>📝 edge_action.js</span>
             <span className="hint">Ctrl+Enter to run</span>
@@ -259,7 +276,7 @@ function App() {
         </div>
 
         {/* Right Panel */}
-        <div className="panel right-panel">
+        <div className={`panel right-panel${mobileTab !== "config" ? " mobile-hidden" : ""}`}>
           {/* Input Configurator */}
           <div className="input-section">
             <div className="panel-header">
