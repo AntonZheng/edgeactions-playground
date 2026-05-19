@@ -93,4 +93,23 @@
   letter-spacing: 0.2px;
 }
 
+@media (max-width: 1200px) {
+  .lifecycle-pipeline {
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .lifecycle-pipeline {
+    padding: 8px 10px;
+  }
+
+  .pipeline-stage {
+    padding: 5px 9px;
+  }
+
+  .pipeline-endpoint {
+    padding: 4px 8px;
+  }
+}
 

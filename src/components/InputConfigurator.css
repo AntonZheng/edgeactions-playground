@@ -527,3 +527,38 @@
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-glow);
 }
+
+@media (max-width: 768px) {
+  .input-tab-content {
+    padding: 10px;
+  }
+
+  .kv-key {
+    max-width: 45%;
+  }
+}
+
+@media (max-width: 480px) {
+  .kv-row,
+  .mock-row,
+  .context-field-row {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .kv-key,
+  .kv-value,
+  .context-select {
+    max-width: 100%;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .context-custom-input {
+    width: 100%;
+  }
+
+  .origin-row {
+    flex-wrap: wrap;
+  }
+}
