@@ -206,9 +206,10 @@ function computeSimulatedResponse(
   const handlerSelectedId = output.origin?.id ?? -1;
   const handlerSetResponseCode = output.response.response_code > 0;
 
-  // If handler set a response_code WITHOUT selecting an origin, it's a synthetic response
+  // If handler set an error response_code (4xx/5xx) WITHOUT selecting an origin, it's a synthetic response
   // (e.g., geo-block returning 403). The request never reaches an origin.
-  if (handlerSetResponseCode && handlerSelectedId < 0) {
+  // Setting 2xx/3xx response_code is just an override — request still goes to origin.
+  if (handlerSetResponseCode && handlerSelectedId < 0 && output.response.response_code >= 400) {
     return {
       statusCode: output.response.response_code,
       headers: { ...output.response.headers },
