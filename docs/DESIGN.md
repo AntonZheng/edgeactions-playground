@@ -38,7 +38,7 @@ graph TD
 
 ---
 
-## Request Lifecycle (Production vs Playground)
+## Request Lifecycle
 
 ```mermaid
 sequenceDiagram
@@ -103,25 +103,14 @@ interface ExecutionProvider {
 
 ### 3. Simulation Engine (`playground-store.ts :: computeSimulatedResponse`)
 
-After executing the handler, the simulation determines what a real AFD response would look like:
+After executing the handler, the simulation engine models what Azure Front Door + the origin would do in production:
 
-```mermaid
-flowchart TD
-    A[Handler Output] --> B{response_code > 0<br/>AND no origin selected?}
-    B -->|Yes| C[Synthetic Response<br/>Block at edge, no origin contacted]
-    B -->|No| D{Handler set origin.id?}
-    D -->|Yes| E[Route to selected origin]
-    D -->|No| F[AFD weighted random routing<br/>among healthy origins]
-    E --> G[Merge: origin response + handler mods]
-    F --> G
-    G --> H[Final Response to Client]
-    C --> H
-```
+- **Synthetic response (block)** — Handler sets `response_code` without selecting an origin → request terminated at edge, no origin contacted
+- **Origin selection** — Handler explicitly picks an origin via `origin.id`, or AFD default weighted routing is simulated
+- **Response merging** — Origin mock provides base response; handler's status code and headers override/merge on top
 
-**Merging rules:**
-- Status code: handler's `response_code` overrides origin status (if set)
-- Headers: handler's `response.headers` merge on top of origin headers
-- Body: always from origin (body manipulation not yet supported in production)
+> [!WARNING]
+> Body override (`response.body`) is defined in the contract but not yet implemented in production. The Actor Agent hardcodes `body_override: None`. Handler body modifications are silently discarded.
 
 ### 4. Input Configuration (`InputConfigurator.tsx`)
 
@@ -166,77 +155,6 @@ interface EdgeActionEvent {
 }
 ```
 
-### Production Fidelity
-
-| Feature | Playground | Production |
-|---------|-----------|------------|
-| Header manipulation | ✅ Simulated | ✅ Supported |
-| URL rewrite | ✅ Simulated | ✅ Supported |
-| Status code override | ✅ Simulated | ✅ Supported |
-| Origin selection | ✅ Simulated | ✅ Supported |
-| Synthetic response (block) | ✅ Simulated | ✅ Supported |
-| Body override | ⚠️ Shown as unsupported | ❌ Not yet implemented |
-| Multiple hook points | 🔲 UI exists | 🔲 Only ClientRequest active |
-| CPU budget enforcement | ❌ Not simulated | ✅ Enforced |
-
-> [!WARNING]
-> Body override (`response.body`, `request.body`) is defined in the FlatBuffer contract but the Actor Agent currently hardcodes `body_override: None` and `is_body_modified: false`. Handler body modifications are silently discarded in production.
-
----
-
-## Share URLs
-
-State is encoded entirely in the URL hash (no backend needed):
-
-```
-https://antonzheng.github.io/edgeactions-playground/#<LZ-compressed JSON>
-```
-
-**Encoding pipeline:**
-
-```mermaid
-flowchart LR
-    A[Code + Event] --> B[Compact v2 format<br/>short keys, strip defaults]
-    B --> C[JSON.stringify]
-    C --> D[LZ-string compress]
-    D --> E[URI-safe Base64<br/>in URL hash]
-```
-
-**Compact key mapping:** `c`=code, `i`=input, `r`=request, `u`=uri, `m`=method, `d`=headers, `o`=origin_data, `s`=response, `h`=hook_point, `x`=context, `g`=origin
-
-**Typical URL size:** ~200-400 chars for simple handlers (vs ~2000+ uncompressed)
-
----
-
-## Technology Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 19 + TypeScript |
-| Build | Vite |
-| State | Zustand |
-| Editor | Monaco Editor (@monaco-editor/react) |
-| JS Runtime | quickjs-emscripten (WASM) |
-| Compression | lz-string |
-| Hosting | GitHub Pages (static) |
-| CI/CD | GitHub Actions (build + deploy on push) |
-
----
-
-## Deployment
-
-```yaml
-# .github/workflows/deploy.yml
-on push to main:
-  1. npm ci && npm run build
-  2. Upload dist/ as Pages artifact
-  3. Deploy to GitHub Pages
-```
-
-- Base path: `/edgeactions-playground/` (configured in `vite.config.ts`)
-- Fully static — no server, API, or database
-- Works offline after initial load (all WASM loaded at startup)
-
 ---
 
 ## Future Considerations
@@ -248,5 +166,3 @@ on push to main:
 3. **Body override support** — When Actor Agent implements `body_override` / `is_body_modified`, update the simulation to use handler-set body.
 
 4. **Additional hook points** — When `OriginResponse` and `ClientResponse` hooks go live, the simulation pipeline will need to chain multiple handler invocations.
-
-5. **Short share URLs** — Could use GitHub Gists as a backend for shorter shareable links.

@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# Edge Actions Playground
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-based playground for writing and testing [Azure Front Door Edge Actions](https://learn.microsoft.com/en-us/azure/frontdoor/edge-actions-overview) handlers — no deployment required.
 
-Currently, two official plugins are available:
+**Live:** https://antonzheng.github.io/edgeactions-playground/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What is this?
 
-## React Compiler
+Edge Actions let you run JavaScript at the CDN edge to manipulate requests and responses flowing through Azure Front Door. This playground lets you:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- ✍️ **Write handlers** in a Monaco editor with full IntelliSense for the Edge Actions API
+- ▶️ **Execute locally** using QuickJS compiled to WebAssembly (runs entirely in your browser)
+- 🔀 **Simulate routing** — see which origin would be selected and how headers/status are modified
+- 🔗 **Share** configurations via URL
 
-## Expanding the ESLint configuration
+## Architecture
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```mermaid
+graph TD
+    subgraph Browser
+        Editor[Monaco Editor] --> Store[Zustand Store]
+        Input[Input Configurator] --> Store
+        Store --> Executor[QuickJS WASM Executor]
+        Executor --> Sim[Simulation Engine]
+        Sim --> Output[Output Panels]
+    end
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Everything runs client-side. No backend, no network calls — works offline after initial load.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## How it works
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. **You write a handler** — a `function handler(event)` that receives an `EdgeActionEvent` and returns it modified
+2. **You configure the input** — the HTTP request, available origins, and edge context (country, device type, etc.)
+3. **You click Run** — QuickJS executes your handler in a WASM sandbox
+4. **The simulation engine** takes your handler's output and simulates what Azure Front Door would do: origin selection, header merging, status code override, or blocking the request entirely
+
+> [!NOTE]
+> The execution engine uses QuickJS (interpreter). Production uses Hyperlight micro-VMs. Logic behavior is identical but performance characteristics differ.
+
+## Tech Stack
+
+| | |
+|--|--|
+| React 19 + TypeScript | UI framework |
+| Vite | Build tooling |
+| Monaco Editor | Code editor with IntelliSense |
+| quickjs-emscripten | JavaScript execution (WASM) |
+| Zustand | State management |
+| GitHub Pages | Hosting (static, via GitHub Actions) |
+
+## Development
+
+```bash
+npm install
+npm run dev     # http://localhost:5173
+npm run build   # Production build → dist/
 ```
+
+## Documentation
+
+See [`docs/DESIGN.md`](docs/DESIGN.md) for detailed architecture, component breakdown, and implementation notes.
